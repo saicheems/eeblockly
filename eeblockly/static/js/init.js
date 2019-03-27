@@ -44,3 +44,4 @@ var onResize = function(e) {
 blocklyArea.contentWindow.addEventListener('resize', onResize, false);
 onResize();
 Blockly.svgResize(workspace);
+workspace.getFlyout_().CORNER_RADIUS = 0;

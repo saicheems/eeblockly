@@ -20,7 +20,27 @@
   </div>
   <div id="blockly-div" style="position: absolute;"></div>
   <xml id="toolbox" style="display: none">
+    {% for group, blocks in groups|dictsort -%}
+    <category name="{{group}}">
+      {% for type, block in blocks|dictsort -%}
+      <block type="{{type}}"></block>
+      {%- endfor %}
+    </category>
+    {%- endfor %}
   </xml>
+  <script>
+    {%- autoescape false -%}
+    {%- for group, blocks in groups|dictsort -%}
+    {% for type, block in blocks|dictsort %}
+    Blockly.Blocks["{{type}}"] = {
+      init: function() {
+        this.jsonInit({{json.dumps(block, sort_keys=True)}});
+      }
+    };
+    {%- endfor %}
+    {%- endfor %}
+    {%- endautoescape %}
+  </script>
 
   <script src="/static/js/init.js"></script>
 </body>
