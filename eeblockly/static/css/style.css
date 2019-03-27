@@ -1,0 +1,51 @@
+.split {
+}
+
+.split-horizontal {
+  height: 100%;
+  float: left;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+#blockly-area {
+  border: none;
+  width: 100%;
+}
+
+.blocklyText, .blocklyHtmlInput, .blocklyTreeLabel {
+  font-family: 'Roboto';
+}
+
+#console {
+  font-family: monospace;
+  overflow: auto;
+}
+
+#console p {
+  margin-block-start: 0px;
+}
+
+.gutter {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+.split.split-horizontal, .gutter.gutter-horizontal {
+  height: 100%;
+  float: left;
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+}
+
+.gutter.gutter-vertical {
+  cursor: row-resize;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+}
