@@ -7,7 +7,7 @@ Split(['#left-pane', '#right-pane'], {
   }
 });
 
-Split(['#blockly-area', '#console'], {
+Split(['#editor', '#console'], {
   direction: 'vertical',
   cursor: 'row-resize',
   gutterSize: 24,
@@ -19,7 +19,7 @@ var map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/streets-v11',
   center: [0, 0],
-  zoom: 9
+  zoom: 0
 });
 
 var blocklyArea = document.getElementById('blockly-area');

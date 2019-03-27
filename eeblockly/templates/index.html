@@ -5,17 +5,30 @@
   <script src="/static/js/blockly_compressed.js"></script>
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet'/>
+
   <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
 </head>
 <body>
   <div id="left-pane" class="split split-horizontal">
     <div id="map"></div>
   </div>
   <div id="right-pane" class="split split-horizontal">
-    <iframe id="blockly-area" class="split"></iframe>
+    <div id="editor" class="split">
+      <div id="editor-bar">
+        <h1 class="label mdc-typography--headline6">Editor</h6>
+        <button id="run-button" class="mdc-button mdc-button--outlined mdc-button--dense">Run</button>
+      </div>
+      <iframe id="blockly-area" class="split"></iframe>
+    </div>
     <div id="console" class="split">
-      <p>> ...</p>
-      <p>> ...</p>
+      <div id="console-bar">
+        <h1 class="label mdc-typography--headline6">Console</h6>
+      </div>
+      <div id="console-entries">
+        <p>> ...</p>
+        <p>> ...</p>
+      </div>
     </div>
   </div>
   <div id="blockly-div" style="position: absolute;"></div>
