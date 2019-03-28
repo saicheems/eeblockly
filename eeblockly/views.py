@@ -1,10 +1,11 @@
 from eeblockly import app
 from eeblockly.generator import generate_algorithm_groups, generate_special_groups
-from flask import jsonify, render_template, request
+from flask import jsonify, render_template, request, send_file
 from google.auth.transport.requests import AuthorizedSession
 from google.oauth2 import service_account
 
 import json
+import io
 
 ALGORITHMS = None
 with open(app.config["ALGORITHMS_PATH"]) as f:
@@ -54,14 +55,13 @@ def create_map():
 
 
 @app.route(
-    "/v1/projects/earthengine-legacy/maps/<map_id>/<z>/<x>/<y>", methods=["POST"]
+    "/v1/projects/earthengine-legacy/maps/<map_id>/tiles/<z>/<x>/<y>", methods=["GET"]
 )
 def get_tile(map_id, z, x, y):
-    response = authed_session.post(
-        "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/{}/{}/{}/{}".format(
+    response = authed_session.get(
+        "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/{}/tiles/{}/{}/{}".format(
             map_id, z, x, y
         ),
-        data=request.data,
         stream=True,
     )
-    return response.raw
+    return send_file(io.BytesIO(response.content), mimetype="image/png")

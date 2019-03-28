@@ -14,13 +14,14 @@ Split(["#editor", "#console"], {
   sizes: [60, 40]
 });
 
-mapboxgl.accessToken = "pk.eyJ1Ijoic2tpcmFuYyIsImEiOiJjanRuNHhpdXgwZGU1M3lwNXZpNTIzZ2RwIn0.RyfnfyVjNalmeLeB7syt9g";
-var map = new mapboxgl.Map({
-  container: "map",
-  style: "mapbox://styles/mapbox/streets-v11",
-  center: [0, 0],
-  zoom: 0
-});
+var map;
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: 0, lng: 0},
+    zoom: 1,
+    disableDefaultUI: true
+  });
+}
 
 var blocklyArea = document.getElementById("blockly-area");
 var blocklyDiv = document.getElementById("blockly-div");
