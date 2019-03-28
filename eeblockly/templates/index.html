@@ -86,7 +86,7 @@
         if (topBlocks[i].type == "Print") {
           var expression = buildExpression(
             topBlocks[i].inputList[0].connection.targetBlock());
-          (function _() {
+          (function() {
             var p = addConsoleEntry("Computing...");
             computeValue(expression)
               .then(response => response.json())
