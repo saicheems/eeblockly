@@ -8,6 +8,12 @@ import json
 # Otherwise, this is useful for casting in places where specific type
 # information is lost (e.g.  "Element" to "Image").
 TYPE_BLOCKS = {
+    "Output": {
+        "message0": "Print %1",
+        "type": "Print",
+        "args0": [{"type": "input_value", "name": "value"}],
+        "colour": hash("Number") % 360,
+    },
     # ee.Number.
     "Number": {
         "message0": "%1",
@@ -27,11 +33,11 @@ TYPE_BLOCKS = {
 }
 
 # Algorithm groups.
-GROUPS = ["Number", "String"]
+GROUPS = ["Number", "String", "Output"]
 
 
 def generate_groups():
     groups = {key: {} for key in GROUPS}
-    for id, block in TYPE_BLOCKS.items():
-        groups[id][id] = block
+    for group, block in TYPE_BLOCKS.items():
+        groups[group][block["type"]] = block
     return groups

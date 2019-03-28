@@ -25,7 +25,7 @@ var map = new mapboxgl.Map({
 var blocklyArea = document.getElementById('blockly-area');
 var blocklyDiv = document.getElementById('blockly-div');
 var workspace = Blockly.inject(blocklyDiv, {toolbox: document.getElementById('toolbox')});
-var onResize = function(e) {
+var onresize = function(e) {
   var element = blocklyArea;
   var x = 0;
   var y = 0;
@@ -41,7 +41,7 @@ var onResize = function(e) {
   blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
   Blockly.svgResize(workspace);
 };
-blocklyArea.contentWindow.addEventListener('resize', onResize, false);
-onResize();
+blocklyArea.contentWindow.addEventListener('resize', onresize, false);
+onresize();
 Blockly.svgResize(workspace);
 workspace.getFlyout_().CORNER_RADIUS = 0;

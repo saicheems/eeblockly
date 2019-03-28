@@ -27,7 +27,6 @@
       </div>
       <div id="console-entries">
         <p>> ...</p>
-        <p>> ...</p>
       </div>
     </div>
   </div>
@@ -54,7 +53,33 @@
     {%- endfor %}
     {%- endautoescape %}
   </script>
+  <script>
+    var consoleEntries = document.getElementById("console-entries");
+    document.getElementById("run-button").onclick = function() {
+      var topBlocks = workspace.getTopBlocks();
+      for (var i = 0; i < topBlocks.length; i++) {
+        if (topBlocks[i].type == "Print") {
+          var e = expression(topBlocks[i].inputList[0].connection.targetBlock());
+          fetch('http://localhost:5000/v1/value:compute', {
+            method: 'POST',
+            body: JSON.stringify({'expression': e}),
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+          })
+          .then(response => response.json())
+          .catch(error => console.error(error))
+          .then(response => {
+            var p = document.createElement("p");
+            var node = document.createTextNode("> " + JSON.stringify(response["result"]));
+            p.appendChild(node);
+            console.log(response);
+            consoleEntries.append(p);
+          });
+        }
+      }
+    };
+  </script>
 
   <script src="/static/js/init.js"></script>
+  <script src="/static/js/build.js"></script>
 </body>
 </html>
