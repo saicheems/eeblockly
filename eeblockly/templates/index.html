@@ -26,7 +26,7 @@
         <h1 class="label mdc-typography--headline6">Console</h6>
       </div>
       <div id="console-entries">
-        <p>> ...</p>
+        <p>> Use the "Print" block to write to this console!</p>
       </div>
     </div>
   </div>
@@ -53,33 +53,73 @@
     {%- endfor %}
     {%- endautoescape %}
   </script>
-  <script>
-    var consoleEntries = document.getElementById("console-entries");
-    document.getElementById("run-button").onclick = function() {
-      var topBlocks = workspace.getTopBlocks();
-      for (var i = 0; i < topBlocks.length; i++) {
-        if (topBlocks[i].type == "Print") {
-          var e = expression(topBlocks[i].inputList[0].connection.targetBlock());
-          fetch('http://localhost:5000/v1/value:compute', {
-            method: 'POST',
-            body: JSON.stringify({'expression': e}),
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-          })
-          .then(response => response.json())
-          .catch(error => console.error(error))
-          .then(response => {
-            var p = document.createElement("p");
-            var node = document.createTextNode("> " + JSON.stringify(response["result"]));
-            p.appendChild(node);
-            console.log(response);
-            consoleEntries.append(p);
-          });
-        }
-      }
-    };
-  </script>
 
   <script src="/static/js/init.js"></script>
   <script src="/static/js/build.js"></script>
+  <script>
+    var xml = Blockly.Xml.textToDom(''
+      + '<xml>'
+      + '  <block type="Print">'
+      + '    <value name="value">'
+      + '      <block type="String">'
+      + '        <field name="value">text</field>'
+      + '      </block>'
+      + '    </value>'
+      + '  </block>'
+      + '</xml>');
+    Blockly.Xml.domToWorkspace(xml, workspace);
+
+    var consoleEntries = document.getElementById("console-entries");
+    document.getElementById("run-button").onclick = function() {
+      clearConsole();
+
+      var topBlocks = workspace.getTopBlocks();
+      for (var i = 0; i < topBlocks.length; i++) {
+        if (topBlocks[i].type == "Print") {
+          var expression = buildExpression(
+            topBlocks[i].inputList[0].connection.targetBlock());
+          var p = addConsoleEntry("Computing...");
+          computeValue(expression)
+            .then(response => response.json())
+            .catch(error => console.error(error))
+            .then(response => {
+              changeConsoleEntryText(p, JSON.stringify(response["result"]));
+              console.log(response);
+            });
+        }
+      }
+    };
+
+    var clearConsole = function() {
+      // Removes all nodes after the first. I don't know why there are 3
+      // children by default, but there are...
+      while (consoleEntries.childNodes.length > 3) {
+        consoleEntries.removeChild(consoleEntries.childNodes[3]);
+      }
+    }
+
+    var addConsoleEntry = function(text) {
+      var p = document.createElement("p");
+      var node = document.createTextNode("> " + text);
+      p.appendChild(node);
+      consoleEntries.append(p);
+      return p;
+    }
+
+    var changeConsoleEntryText = function(p, text) {
+      p.firstChild.nodeValue = "> " + text;
+    }
+
+    var computeValue = function(expression) {
+      return fetch('http://localhost:5000/v1/value:compute', {
+        method: 'POST',
+        body: JSON.stringify({ 'expression': expression }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+  </script>
 </body>
 </html>
