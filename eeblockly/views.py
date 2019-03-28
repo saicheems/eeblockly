@@ -1,5 +1,5 @@
 from eeblockly import app
-from eeblockly.generator import generate_groups
+from eeblockly.generator import generate_algorithm_groups, generate_special_groups
 from flask import jsonify, render_template, request
 from google.auth.transport.requests import AuthorizedSession
 from google.oauth2 import service_account
@@ -17,10 +17,20 @@ creds = creds.with_scopes(["https://www.googleapis.com/auth/earthengine.readonly
 authed_session = AuthorizedSession(creds)
 
 
+SPECIAL_GROUPS = generate_special_groups()
+ALGORITHM_GROUPS = generate_algorithm_groups()
+ALL_GROUPS = {**SPECIAL_GROUPS, **ALGORITHM_GROUPS}
+
+
 @app.route("/")
 def index():
-    groups = generate_groups()
-    return render_template("index.html", groups=groups, json=json)
+    return render_template(
+        "index.html",
+        special_groups=SPECIAL_GROUPS,
+        algorithm_groups=ALGORITHM_GROUPS,
+        all_groups=ALL_GROUPS,
+        json=json,
+    )
 
 
 @app.route("/v1/value:compute", methods=["POST"])

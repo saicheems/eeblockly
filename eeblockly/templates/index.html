@@ -32,7 +32,15 @@
   </div>
   <div id="blockly-div" style="position: absolute;"></div>
   <xml id="toolbox" style="display: none">
-    {% for group, blocks in groups|dictsort -%}
+    {% for group, blocks in special_groups|dictsort -%}
+    <category name="{{group}}">
+      {% for type, block in blocks|dictsort -%}
+      <block type="{{type}}"></block>
+      {%- endfor %}
+    </category>
+    {%- endfor %}
+    <sep></sep>
+    {% for group, blocks in algorithm_groups|dictsort -%}
     <category name="{{group}}">
       {% for type, block in blocks|dictsort -%}
       <block type="{{type}}"></block>
@@ -42,7 +50,7 @@
   </xml>
   <script>
     {%- autoescape false -%}
-    {%- for group, blocks in groups|dictsort -%}
+    {%- for group, blocks in all_groups|dictsort -%}
     {% for type, block in blocks|dictsort %}
     Blockly.Blocks["{{type}}"] = {
       init: function() {
