@@ -74,6 +74,17 @@
       + '      </block>'
       + '    </value>'
       + '  </block>'
+      + '  <block type="Map.addLayer" x="10" y="50">'
+      + '    <value name="object">'
+      + '      <block type="Image.constant">'
+      + '        <value name="value">'
+      + '          <block type="Number">'
+      + '            <field name="value">0</field>'
+      + '          </block>'
+      + '        </value>'
+      + '      </block>'
+      + '    </value>'
+      + '  </block>'
       + '</xml>');
     Blockly.Xml.domToWorkspace(xml, workspace);
 
@@ -96,6 +107,16 @@
                 console.log(response);
               });
           })();
+        } else if (topBlocks[i].type == "Map.addLayer") {
+          var expression = buildExpression(
+            topBlocks[i].inputList[0].connection.targetBlock());
+          createMap(expression)
+            .then(response => response.json())
+            .catch(error => console.error(error))
+            .then(response => {
+              L.tileLayer("http://localhost:5000/" + name + "/tiles/{z}/{x}/{y}").addTo(map);
+              console.log(response);
+            });
         }
       }
     };
@@ -124,6 +145,20 @@
       return fetch("http://localhost:5000/v1/value:compute", {
         method: "POST",
         body: JSON.stringify({"expression": expression}),
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+
+    var createMap = function(expression) {
+      return fetch("http://localhost:5000/v1/projects/earthengine-legacy/maps", {
+        method: "POST",
+        body: JSON.stringify({
+          "expression": expression,
+          "fileFormat": "PNG"
+        }),
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*"

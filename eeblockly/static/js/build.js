@@ -1,10 +1,22 @@
+var buildFunctionInvocation = function(block) {
+  var node = {
+    "functionName": block.type,
+    "arguments": {}
+  };
+  for (var i = 1; i < block.inputList.length; i++) {
+    var b = block.inputList[i];
+    node.arguments[b.name] = buildValueNode(b.connection.targetBlock());
+  }
+  return node;
+}
+
 var buildValueNode = function(block) {
   if (block.type == "Number") {
-    return {"constantValue": block.getFieldValue("value")};
+    return {"constantValue": Number(block.getFieldValue("value"))};
   } else if (block.type == "String") {
     return {"constantValue": block.getFieldValue("value")};
   } else {
-    throw "Unexpected block type: " + block.type;
+    return {"functionInvocationValue": buildFunctionInvocation(block)};
   }
 };
 

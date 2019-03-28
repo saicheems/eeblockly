@@ -13,12 +13,12 @@ with open(app.config["ALGORITHMS_PATH"]) as f:
 SERVICE_ACCOUNT_KEY_PATH = app.config["SERVICE_ACCOUNT_KEY_PATH"]
 
 creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_KEY_PATH)
-creds = creds.with_scopes(["https://www.googleapis.com/auth/earthengine.readonly"])
+creds = creds.with_scopes(["https://www.googleapis.com/auth/earthengine"])
 authed_session = AuthorizedSession(creds)
 
 
 SPECIAL_GROUPS = generate_special_groups()
-ALGORITHM_GROUPS = generate_algorithm_groups()
+ALGORITHM_GROUPS = generate_algorithm_groups(ALGORITHMS)
 ALL_GROUPS = {**SPECIAL_GROUPS, **ALGORITHM_GROUPS}
 
 
@@ -40,5 +40,28 @@ def compute_value():
         data=request.data,
         stream=True,
     )
-    print(response)
     return jsonify(response.json())
+
+
+@app.route("/v1/projects/earthengine-legacy/maps", methods=["POST"])
+def create_map():
+    response = authed_session.post(
+        "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps",
+        data=request.data,
+        stream=True,
+    )
+    return jsonify(response.json())
+
+
+@app.route(
+    "/v1/projects/earthengine-legacy/maps/<map_id>/<z>/<x>/<y>", methods=["POST"]
+)
+def get_tile(map_id, z, x, y):
+    response = authed_session.post(
+        "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/{}/{}/{}/{}".format(
+            map_id, z, x, y
+        ),
+        data=request.data,
+        stream=True,
+    )
+    return response.raw
