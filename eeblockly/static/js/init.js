@@ -1,7 +1,8 @@
 Split(["#left-pane", "#right-pane"], {
   direction: "horizontal",
   cursor: "col-resize",
-  gutterSize: 24
+  gutterSize: 24,
+  minSize: [0, 400]
 });
 
 Split(["#editor", "#console"], {
