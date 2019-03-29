@@ -91,6 +91,8 @@ def generate_block(algorithm):
                 "check": TYPE_MAP[argument["type"]],
             }
         )
+        if "defaultValue" in argument:
+            block["args0"][-1]["defaultValue"] = argument["defaultValue"]
         block["message0"] += "{} %{} ".format(argument_name, i + 2)
 
     block["message0"] = block["message0"][0:-1]

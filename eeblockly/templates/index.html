@@ -30,34 +30,44 @@
   </div>
   <div id="blockly-div" style="position: absolute;"></div>
   <xml id="toolbox" style="display: none">
-    {% for group, blocks in special_groups|dictsort -%}
+    {% for group, blocks in special_groups|dictsort %}
     <category name="{{group}}">
-      {% for type, block in blocks|dictsort -%}
+      {% for type, block in blocks|dictsort %}
       <block type="{{type}}"></block>
-      {%- endfor %}
+      {% endfor %}
     </category>
-    {%- endfor %}
+    {% endfor %}
     <sep></sep>
-    {% for group, blocks in algorithm_groups|dictsort -%}
+    {% for group, blocks in algorithm_groups|dictsort %}
     <category name="{{group}}">
-      {% for type, block in blocks|dictsort -%}
-      <block type="{{type}}"></block>
-      {%- endfor %}
+      {% for type, block in blocks|dictsort %}
+      <block type="{{type}}">
+        {% for argument in block["args0"] if "defaultValue" in argument %}
+        <value name="{{argument["name"]}}">
+          {% if argument["check"] == "Number" %}
+            <shadow type="Number">
+              <field name="value">{{argument["defaultValue"]}}</field>
+            </shadow>
+          {% endif %}
+        </value>
+        {% endfor %}
+      </block>
+      {% endfor %}
     </category>
-    {%- endfor %}
+    {% endfor %}
   </xml>
   <script>
-    {%- autoescape false -%}
-    {%- for group, blocks in all_groups|dictsort -%}
+    {% autoescape false %}
+    {% for group, blocks in all_groups|dictsort %}
     {% for type, block in blocks|dictsort %}
     Blockly.Blocks["{{type}}"] = {
       init: function() {
         this.jsonInit({{json.dumps(block, sort_keys=True)}});
       }
     };
-    {%- endfor %}
-    {%- endfor %}
-    {%- endautoescape %}
+    {% endfor %}
+    {% endfor %}
+    {% endautoescape %}
   </script>
 
   <script src="/static/js/init.js"></script>
@@ -92,9 +102,9 @@
       + '          </block>'
       + '        </value>'
       + '        <value name="version">'
-      + '          <block type="Number">'
+      + '          <shadow type="Number">'
       + '            <field name="value">-1</field>'
-      + '          </block>'
+      + '          </shadow>'
       + '        </value>'
       + '      </block>'
       + '    </value>'
@@ -183,7 +193,7 @@
     }
 
     var createLayerControlLi = function(i) {
-      var template = document.createElement('template');
+      var template = document.createElement("template");
       template.innerHTML = ''
         + '<li class="mdc-list-item" role="checkbox">'
         + '  <span class="mdc-list-item__graphic">'
