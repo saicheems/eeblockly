@@ -1,10 +1,7 @@
 Split(["#left-pane", "#right-pane"], {
   direction: "horizontal",
   cursor: "col-resize",
-  gutterSize: 24,
-  onDrag: function() {
-    map.resize();
-  }
+  gutterSize: 24
 });
 
 Split(["#editor", "#console"], {
@@ -14,6 +11,20 @@ Split(["#editor", "#console"], {
   sizes: [60, 40]
 });
 
+function LayerControl(controlDiv, map) {
+  var ul = document.createElement("ul");
+  ul.setAttribute("class", "mdc-list mdc-list--dense");
+  ul.setAttribute("role", "group");
+  ul.style.backgroundColor = "#fff";
+  ul.style.margin = "8px";
+  ul.style.borderRadius = "2px";
+  controlDiv.appendChild(ul);
+}
+
+var layerControlDiv = document.createElement('div');
+var layerControl = new LayerControl(layerControlDiv, map);
+var layerControlUl = layerControlDiv.firstChild;
+
 var map;
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -21,6 +32,8 @@ function initMap() {
     zoom: 2,
     disableDefaultUI: true
   });
+
+  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(layerControlDiv);
 }
 
 var blocklyArea = document.getElementById("blockly-area");

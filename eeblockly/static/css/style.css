@@ -2,6 +2,24 @@
   --mdc-theme-primary: #4285F4;
 }
 
+.mdc-list--dense {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.mdc-list-item {
+  padding: 0px 8px;
+}
+
+.mdc-list--dense .mdc-list-item {
+  height: 32px !important;
+}
+
+.mdc-list-item__text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .split {
 }
 
