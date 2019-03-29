@@ -83,6 +83,22 @@
       + '      </block>'
       + '    </value>'
       + '  </block>'
+      + '  <block type="Map.addLayer" x="10" y="115">'
+      + '    <value name="object">'
+      + '      <block type="Image.load">'
+      + '        <value name="id">'
+      + '          <block type="String">'
+      + '            <field name="value">users/saicheems/clusters</field>'
+      + '          </block>'
+      + '        </value>'
+      + '        <value name="version">'
+      + '          <block type="Number">'
+      + '            <field name="value">-1</field>'
+      + '          </block>'
+      + '        </value>'
+      + '      </block>'
+      + '    </value>'
+      + '  </block>'
       + '</xml>');
     Blockly.Xml.domToWorkspace(xml, workspace);
 
@@ -110,12 +126,13 @@
           })();
         } else if (topBlocks[i].type == "Map.addLayer") {
           layerCount++;
-          (function() {
+          (function(layerCount) {
             var expression = buildExpression(
               topBlocks[i].inputList[0].connection.targetBlock());
             var layerControlLi = createLayerControlLi(layerCount);
             layerControlUl.appendChild(layerControlLi);
             var checkbox = document.getElementById("layer-list-checkbox-item-" + layerCount);
+            checkbox.disabled = true;
             checkbox.index = layerCount - 1;
             checkbox.onchange = function(checkbox) {
               toggleMapLayer(checkbox);
@@ -126,9 +143,14 @@
               .catch(error => console.error(error))
               .then(response => {
                 checkbox.imageMapType = addMapLayer(layerCount, response.name);
+                checkbox.disabled = false;
+                checkbox.checked = true;
+                var event = document.createEvent("HTMLEvents");
+                event.initEvent("change", false, true);
+                checkbox.dispatchEvent(event);
                 console.log(response);
               });
-          })();
+          })(layerCount);
         }
       }
     };
@@ -148,7 +170,6 @@
         },
         tileSize: new google.maps.Size(256, 256)
       });
-      map.overlayMapTypes.push(imageMapType);
       return imageMapType;
     }
 
@@ -169,8 +190,7 @@
         + '    <div class="mdc-checkbox">'
         + '      <input type="checkbox"'
         + '             class="mdc-checkbox__native-control"'
-        + '             id="layer-list-checkbox-item-' + i + '"'
-        + '             checked/>'
+        + '             id="layer-list-checkbox-item-' + i + '"/>'
         + '      <div class="mdc-checkbox__background">'
         + '        <svg class="mdc-checkbox__checkmark"'
         + '             viewBox="0 0 24 24">'

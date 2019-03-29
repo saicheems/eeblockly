@@ -48,6 +48,7 @@ ALGORITHM_GROUPS = ["Image", "Number", "String"]
 # A map from EE types to block types.
 TYPE_MAP = {
     "Image<unknown bands>": "Image",
+    "Long": "Number",
     "Number": "Number",
     "String": "String",
     "Object": None,
@@ -73,6 +74,8 @@ def generate_algorithm_groups(algorithms):
     for algorithm in algorithms:
         if algorithm["name"] == "algorithms/Image.constant":
             groups["Image"]["Image.constant"] = generate_block(algorithm)
+        if algorithm["name"] == "algorithms/Image.load":
+            groups["Image"]["Image.load"] = generate_block(algorithm)
     return groups
 
 
