@@ -118,7 +118,9 @@
       clearMapLayers();
 
       var topBlocks = workspace.getTopBlocks();
+
       var layerCount = 0;
+      var chain = Promise.resolve();
 
       for (var i = 0; i < topBlocks.length; i++) {
         if (topBlocks[i].type == "Print") {
@@ -136,39 +138,47 @@
           })();
         } else if (topBlocks[i].type == "Map.addLayer") {
           layerCount++;
-
-          // TODO: Force layers to load in order? The way I can think of doing
-          // that is to collect the map creation functions and promise chain
-          // them, and then a separate promise chain for toggling all the maps
-          // in order.
-          var layerControlLi = createLayerControlLi(layerCount);
+        }
+      }
+      [...Array(layerCount)].reduce((p, _, i) =>
+        p.then(_ => new Promise(resolve => {
+          i++;
+          var layerControlLi = createLayerControlLi(i);
           layerControlUl.appendChild(layerControlLi);
-          var checkbox = document.getElementById("layer-list-checkbox-item-" + layerCount);
+          var checkbox = document.getElementById("layer-list-checkbox-item-" + i);
           checkbox.disabled = true;
-          checkbox.index = layerCount - 1;
+          checkbox.index = i - 1;
           checkbox.onchange = function(checkbox) {
             toggleMapLayer(checkbox);
           };
+          resolve();
+        })),
+        Promise.resolve());
+
+      [...Array(layerCount)].reduce((p, _, i) =>
+        p.then(_ => new Promise(resolve => {
+          i++;
+          var checkbox = document.getElementById("layer-list-checkbox-item-" + i);
+          var expression = buildExpression(
+            topBlocks[i].inputList[0].connection.targetBlock());
 
           (function(layerCount, checkbox) {
-            var expression = buildExpression(
-              topBlocks[i].inputList[0].connection.targetBlock());
-
-            createMap(expression)
-              .then(response => response.json())
-              .catch(error => console.error(error))
-              .then(response => {
-                checkbox.imageMapType = addMapLayer(layerCount, response.name);
-                checkbox.disabled = false;
-                checkbox.checked = true;
-                var event = document.createEvent("HTMLEvents");
-                event.initEvent("change", false, true);
-                checkbox.dispatchEvent(event);
-                console.log(response);
-              });
-          })(layerCount, checkbox);
-        }
-      }
+          createMap(expression)
+            .then(response => response.json())
+            .catch(error => console.error(error))
+            .then(response => {
+              checkbox.imageMapType = addMapLayer(layerCount, response.name);
+              checkbox.disabled = false;
+              checkbox.checked = true;
+              var event = document.createEvent("HTMLEvents");
+              event.initEvent("change", false, true);
+              checkbox.dispatchEvent(event);
+              console.log(layerCount);
+              console.log(response);
+              resolve();
+            });})(i, checkbox);
+        })),
+        Promise.resolve());
     };
 
     var clearMapLayers = function() {
