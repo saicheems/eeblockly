@@ -1,0 +1,14 @@
+{
+  "name": "eeblockly",
+  "description": "An experimental Earth Engine interface with Blockly.",
+  "private": true,
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "tsify": "^4.0.1",
+    "typescript": "^3.4.1",
+    "watchify": "^3.11.1"
+  },
+  "scripts": {
+    "watch": "watchify -v -p [tsify --noImplicitAny --resolveJsonModule] src/main.ts -o static/js/bundle.js --external blockly --external split.js"
+  }
+}
