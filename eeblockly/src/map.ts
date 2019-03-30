@@ -2,10 +2,10 @@ declare var google: any;
 
 var map;
 
-(<any> window).initMap = function() {
-  (<any> window).initMap = null;
+(<any>window).initMap = function() {
+  (<any>window).initMap = null;
   map = init();
-}
+};
 
 function init(): any {
   let map = new google.maps.Map(document.getElementById("map"), {

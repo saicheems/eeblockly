@@ -1,5 +1,4 @@
-import Split = require("split.js");
-import Blockly = require("blockly");
+declare var Split: any;
 import console = require("./console");
 import "./editor.ts";
 import "./map.ts";

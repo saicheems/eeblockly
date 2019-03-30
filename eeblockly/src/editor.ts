@@ -1,10 +1,11 @@
-import Blockly = require("blockly");
+/// <reference path="blockly.d.ts" />
+
 import eeBlocks = require("./ee_blocks");
 
 const workspace = init();
 
 export function getTopBlocks(): Blockly.Block[] {
-  return workspace.getTopBlocks();
+  return workspace.getTopBlocks(true);
 }
 
 function init(): Blockly.Workspace {
@@ -12,9 +13,10 @@ function init(): Blockly.Workspace {
 
   let blocklyArea = document.getElementById("blockly-area");
   let blocklyDiv = document.getElementById("blockly-div");
-  let workspace = Blockly.inject(blocklyDiv, {
+  let workspace = <Blockly.WorkspaceSvg>Blockly.inject(blocklyDiv, {
     toolbox: Blockly.Options.parseToolboxTree(eeBlocks.TOOLBOX_XML)
   });
+  console.log(workspace);
   function onresize() {
     let element: any = blocklyArea;
     let x = 0;
