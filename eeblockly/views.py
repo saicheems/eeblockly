@@ -1,15 +1,10 @@
 from eeblockly import app
-from eeblockly.generator import generate_algorithm_groups, generate_special_groups
 from flask import jsonify, render_template, request, send_file
 from google.auth.transport.requests import AuthorizedSession
 from google.oauth2 import service_account
 
 import json
 import io
-
-ALGORITHMS = None
-with open(app.config["ALGORITHMS_PATH"]) as f:
-    ALGORITHMS = json.load(f)["algorithms"]
 
 SERVICE_ACCOUNT_KEY_PATH = app.config["SERVICE_ACCOUNT_KEY_PATH"]
 
@@ -18,20 +13,9 @@ creds = creds.with_scopes(["https://www.googleapis.com/auth/earthengine"])
 authed_session = AuthorizedSession(creds)
 
 
-SPECIAL_GROUPS = generate_special_groups()
-ALGORITHM_GROUPS = generate_algorithm_groups(ALGORITHMS)
-ALL_GROUPS = {**SPECIAL_GROUPS, **ALGORITHM_GROUPS}
-
-
 @app.route("/")
 def index():
-    return render_template(
-        "index.html",
-        special_groups=SPECIAL_GROUPS,
-        algorithm_groups=ALGORITHM_GROUPS,
-        all_groups=ALL_GROUPS,
-        json=json,
-    )
+    return render_template("index.html")
 
 
 @app.route("/v1/value:compute", methods=["POST"])

@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "blockly": "git://github.com/google/blockly.git#1.20190215.0",
+    "split.js": "^1.5.10",
+    "typescript": "^3.4.1"
+  },
+  "devDependencies": {
+    "tsify": "^4.0.1"
+  }
+}

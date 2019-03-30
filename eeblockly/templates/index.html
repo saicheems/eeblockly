@@ -1,9 +1,6 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
-  <script src="/static/js/blockly_compressed.js"></script>
-
   <link rel="stylesheet" href="static/css/style.css">
   <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
 </head>
@@ -29,89 +26,11 @@
     </div>
   </div>
   <div id="blockly-div" style="position: absolute;"></div>
-  <xml id="toolbox" style="display: none">
-    {% for group, blocks in special_groups|dictsort %}
-    <category name="{{group}}">
-      {% for type, block in blocks|dictsort %}
-      <block type="{{type}}"></block>
-      {% endfor %}
-    </category>
-    {% endfor %}
-    <sep></sep>
-    {% for group, blocks in algorithm_groups|dictsort %}
-    <category name="{{group}}">
-      {% for type, block in blocks|dictsort %}
-      <block type="{{type}}">
-        {% for argument in block["args0"] if "defaultValue" in argument %}
-        <value name="{{argument["name"]}}">
-          {% if argument["check"] == "Number" %}
-            <shadow type="Number">
-              <field name="value">{{argument["defaultValue"]}}</field>
-            </shadow>
-          {% endif %}
-        </value>
-        {% endfor %}
-      </block>
-      {% endfor %}
-    </category>
-    {% endfor %}
-  </xml>
-  <script>
-    {% autoescape false %}
-    {% for group, blocks in all_groups|dictsort %}
-    {% for type, block in blocks|dictsort %}
-    Blockly.Blocks["{{type}}"] = {
-      init: function() {
-        this.jsonInit({{json.dumps(block, sort_keys=True)}});
-      }
-    };
-    {% endfor %}
-    {% endfor %}
-    {% endautoescape %}
-  </script>
-
   <script src="/static/js/init.js"></script>
+  <script src="/static/js/bundle.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSekB1BgBF1DYbMYMVKuIuVTP3sDjzkhs&callback=initMap" async defer></script>
   <script src="/static/js/build.js"></script>
   <script>
-    var xml = Blockly.Xml.textToDom(''
-      + '<xml>'
-      + '  <block type="Print">'
-      + '    <value name="value">'
-      + '      <block type="String">'
-      + '        <field name="value">text</field>'
-      + '      </block>'
-      + '    </value>'
-      + '  </block>'
-      + '  <block type="Map.addLayer" x="10" y="50">'
-      + '    <value name="object">'
-      + '      <block type="Image.constant">'
-      + '        <value name="value">'
-      + '          <block type="Number">'
-      + '            <field name="value">0</field>'
-      + '          </block>'
-      + '        </value>'
-      + '      </block>'
-      + '    </value>'
-      + '  </block>'
-      + '  <block type="Map.addLayer" x="10" y="115">'
-      + '    <value name="object">'
-      + '      <block type="Image.load">'
-      + '        <value name="id">'
-      + '          <block type="String">'
-      + '            <field name="value">users/saicheems/clusters</field>'
-      + '          </block>'
-      + '        </value>'
-      + '        <value name="version">'
-      + '          <shadow type="Number">'
-      + '            <field name="value">-1</field>'
-      + '          </shadow>'
-      + '        </value>'
-      + '      </block>'
-      + '    </value>'
-      + '  </block>'
-      + '</xml>');
-    Blockly.Xml.domToWorkspace(xml, workspace);
-
     var consoleEntries = document.getElementById("console-entries");
     document.getElementById("run-button").onclick = function() {
       clearConsole();
@@ -279,6 +198,5 @@
       });
     }
   </script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSekB1BgBF1DYbMYMVKuIuVTP3sDjzkhs&callback=initMap" async defer></script>
 </body>
 </html>

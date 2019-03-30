@@ -1,0 +1,44 @@
+import Blockly = require("blockly");
+import eeBlocks = require("./ee_blocks");
+
+const workspace = init();
+
+export function getTopBlocks(): Blockly.Block[] {
+  return workspace.getTopBlocks();
+}
+
+function init(): Blockly.Workspace {
+  Blockly.defineBlocksWithJsonArray(eeBlocks.BLOCKS);
+
+  let blocklyArea = document.getElementById("blockly-area");
+  let blocklyDiv = document.getElementById("blockly-div");
+  let workspace = Blockly.inject(blocklyDiv, {
+    toolbox: Blockly.Options.parseToolboxTree(eeBlocks.TOOLBOX_XML)
+  });
+  function onresize() {
+    let element: any = blocklyArea;
+    let x = 0;
+    let y = 0;
+    do {
+      x += element.offsetLeft;
+      y += element.offsetTop;
+      element = element.offsetParent;
+    } while (element);
+    // Position blocklyDiv over blocklyArea.
+    blocklyDiv.style.left = x + "px";
+    blocklyDiv.style.top = y + "px";
+    blocklyDiv.style.width = blocklyArea.offsetWidth + "px";
+    blocklyDiv.style.height = blocklyArea.offsetHeight + "px";
+    Blockly.svgResize(workspace);
+  }
+  (<HTMLIFrameElement>blocklyArea).contentWindow.addEventListener(
+    "resize",
+    onresize,
+    false
+  );
+  onresize();
+  Blockly.svgResize(workspace);
+  workspace.getFlyout_().CORNER_RADIUS = 0;
+
+  return workspace;
+}
