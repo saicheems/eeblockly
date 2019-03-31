@@ -39,13 +39,14 @@ export class Layer {
     </div>
   </span>
   <label class="mdc-list-item__text"
-         for="layer-list-checkbox-item-${index}">Layer ${index}</label>
+         for="layer-list-checkbox-item-${index}">Layer ${index + 1}</label>
 </li>`;
+    this.node = template.content.firstChild;
     this.checkbox = template.content.querySelector(`#layer-${index}-checkbox`);
     this.checkbox.onchange = () => toggleLayer(this);
     this.condemned = false;
     this.enable(false);
-    this.node = template.content.firstChild;
+    this.index = index;
   }
 
   check(checked: boolean) {
@@ -66,6 +67,7 @@ export class Layer {
       this.imageMapType = imageMapType;
       this.enable(true);
       this.check(true);
+      toggleLayer(this);
     });
   }
 }
@@ -107,7 +109,7 @@ export function clearLayers(): void {
 export function addLayer(
   loader: () => Promise<google.maps.ImageMapType>
 ): Layer {
-  let layer = new Layer(layersControlNode.childNodes.length + 1);
+  let layer = new Layer(layersControlNode.childNodes.length);
   lastLoader = lastLoader
     .then(
       () =>
@@ -119,7 +121,7 @@ export function addLayer(
         })
     )
     .then(loader, error => {
-      console.log(error);
+      console.warn(error);
       return null;
     });
   layer.load(lastLoader);
@@ -130,7 +132,12 @@ export function addLayer(
 
 function toggleLayer(layer: Layer) {
   if (layer.condemned) {
-    throw console.error("Somehow toggled a condemned layer.");
+    // This can happen if "Run" is clicked twice in succession and a single
+    // layer is loaded on each click. The reason is that the loader will toggle
+    // the layer when the createMap call returns, and the layer may already be
+    // condemned at that point.
+    console.warn("Toggled a condemned layer.");
+    return;
   }
   if (layer.checkbox.checked) {
     map.overlayMapTypes.setAt(layer.index, layer.imageMapType);

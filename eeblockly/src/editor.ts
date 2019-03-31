@@ -1,6 +1,9 @@
 /// <reference path="blockly.d.ts" />
+/// <reference path="googlemaps.d.ts" />
 
+import build = require("./build");
 import console_ = require("./console");
+import eeApi = require("./ee_api");
 import eeBlocks = require("./ee_blocks");
 import map = require("./map");
 
@@ -22,17 +25,34 @@ runButton.onclick = function(e: MouseEvent): void {
   var chain = Promise.resolve();
   for (let block of topBlocks) {
     if (block.type == "Print") {
-      //var expression = build.expression(block.connection.targetBlock);
-      console.log("Print!");
+      let expression = build.expression(block.getInputTargetBlock("value"));
+      let entry = console_.addEntry("Computing...");
+      eeApi
+        .computeValue(expression)
+        .then(response => response.json())
+        .then(json => {
+          console.log(json);
+          entry.setText(JSON.stringify(json.result));
+        });
     } else if (block.type == "Map.addLayer") {
       layerCount++;
+      let expression = build.expression(block.getInputTargetBlock("value"));
       map.addLayer(
         () =>
           new Promise(resolve =>
-            setTimeout(() => {
-              console.log("Done!");
-              resolve();
-            }, 500)
+            eeApi
+              .createMap(expression)
+              .then(response => response.json())
+              .then(json => {
+                let base = `http://localhost:5000/v1/${json.name}/tiles/`;
+                let imageMapType = new google.maps.ImageMapType({
+                  getTileUrl: function(coord, zoom) {
+                    return base + `${zoom}/${coord.x}/${coord.y}`;
+                  },
+                  tileSize: new google.maps.Size(256, 256)
+                });
+                resolve(imageMapType);
+              })
           )
       );
     }

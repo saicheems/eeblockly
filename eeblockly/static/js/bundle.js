@@ -19030,6 +19030,39 @@ module.exports={
 
 },{}],2:[function(require,module,exports){
 "use strict";
+/// <reference path="blockly.d.ts" />
+Object.defineProperty(exports, "__esModule", { value: true });
+function expression(block) {
+    return {
+        values: { "0": valueNode(block) },
+        result: "0"
+    };
+}
+exports.expression = expression;
+function valueNode(block) {
+    switch (block.type) {
+        case "Number":
+            return { constantValue: +block.getFieldValue("value") };
+        case "String":
+            return { constantValue: block.getFieldValue("value") };
+        default:
+            return { functionInvocationValue: functionInvocation(block) };
+    }
+}
+function functionInvocation(block) {
+    let node = {
+        functionName: block.type,
+        arguments: {}
+    };
+    for (let i = 1; i < block.inputList.length; i++) {
+        let input = block.inputList[i];
+        node.arguments[input.name] = valueNode(input.connection.targetBlock());
+    }
+    return node;
+}
+
+},{}],3:[function(require,module,exports){
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const consoleEntries = document.getElementById("console-entries");
 class Entry {
@@ -19059,11 +19092,14 @@ function addEntry(text) {
 }
 exports.addEntry = addEntry;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
 /// <reference path="blockly.d.ts" />
+/// <reference path="googlemaps.d.ts" />
 Object.defineProperty(exports, "__esModule", { value: true });
+const build = require("./build");
 const console_ = require("./console");
+const eeApi = require("./ee_api");
 const eeBlocks = require("./ee_blocks");
 const map = require("./map");
 const workspace = init();
@@ -19079,15 +19115,32 @@ runButton.onclick = function (e) {
     var chain = Promise.resolve();
     for (let block of topBlocks) {
         if (block.type == "Print") {
-            //var expression = build.expression(block.connection.targetBlock);
-            console.log("Print!");
+            let expression = build.expression(block.getInputTargetBlock("value"));
+            let entry = console_.addEntry("Computing...");
+            eeApi
+                .computeValue(expression)
+                .then(response => response.json())
+                .then(json => {
+                console.log(json);
+                entry.setText(JSON.stringify(json.result));
+            });
         }
         else if (block.type == "Map.addLayer") {
             layerCount++;
-            map.addLayer(() => new Promise(resolve => setTimeout(() => {
-                console.log("Done!");
-                resolve();
-            }, 500)));
+            let expression = build.expression(block.getInputTargetBlock("value"));
+            map.addLayer(() => new Promise(resolve => eeApi
+                .createMap(expression)
+                .then(response => response.json())
+                .then(json => {
+                let base = `http://localhost:5000/v1/${json.name}/tiles/`;
+                let imageMapType = new google.maps.ImageMapType({
+                    getTileUrl: function (coord, zoom) {
+                        return base + `${zoom}/${coord.x}/${coord.y}`;
+                    },
+                    tileSize: new google.maps.Size(256, 256)
+                });
+                resolve(imageMapType);
+            })));
         }
     }
 };
@@ -19124,7 +19177,37 @@ function init() {
     return workspace;
 }
 
-},{"./console":2,"./ee_blocks":4,"./map":6}],4:[function(require,module,exports){
+},{"./build":2,"./console":3,"./ee_api":5,"./ee_blocks":6,"./map":8}],5:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function createMap(expression) {
+    return fetch("http://localhost:5000/v1/projects/earthengine-legacy/maps", {
+        method: "POST",
+        body: JSON.stringify({
+            expression: expression,
+            fileFormat: "PNG",
+            visualizationOptions: {}
+        }),
+        headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        }
+    });
+}
+exports.createMap = createMap;
+function computeValue(expression) {
+    return fetch("http://localhost:5000/v1/value:compute", {
+        method: "POST",
+        body: JSON.stringify({ expression: expression }),
+        headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        }
+    });
+}
+exports.computeValue = computeValue;
+
+},{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("./algorithms.json");
@@ -19140,7 +19223,7 @@ const SPECIAL_BLOCKS = [
     {
         message0: "Map.addLayer %1",
         type: "Map.addLayer",
-        args0: [{ type: "input_value", name: "object" }]
+        args0: [{ type: "input_value", name: "value" }]
     },
     {
         message0: "Print %1",
@@ -19267,7 +19350,7 @@ function algorithmId(algorithm) {
     return algorithm.name.split("/")[1];
 }
 
-},{"./algorithms.json":1}],5:[function(require,module,exports){
+},{"./algorithms.json":1}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./editor.ts");
@@ -19285,7 +19368,7 @@ Split(["#editor", "#console"], {
     sizes: [60, 40]
 });
 
-},{"./editor.ts":3,"./map.ts":6}],6:[function(require,module,exports){
+},{"./editor.ts":4,"./map.ts":8}],8:[function(require,module,exports){
 "use strict";
 /// <reference path="googlemaps.d.ts" />
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -19319,13 +19402,14 @@ class Layer {
     </div>
   </span>
   <label class="mdc-list-item__text"
-         for="layer-list-checkbox-item-${index}">Layer ${index}</label>
+         for="layer-list-checkbox-item-${index}">Layer ${index + 1}</label>
 </li>`;
+        this.node = template.content.firstChild;
         this.checkbox = template.content.querySelector(`#layer-${index}-checkbox`);
         this.checkbox.onchange = () => toggleLayer(this);
         this.condemned = false;
         this.enable(false);
-        this.node = template.content.firstChild;
+        this.index = index;
     }
     check(checked) {
         this.checkbox.checked = checked;
@@ -19342,6 +19426,7 @@ class Layer {
             this.imageMapType = imageMapType;
             this.enable(true);
             this.check(true);
+            toggleLayer(this);
         });
     }
 }
@@ -19378,7 +19463,7 @@ function clearLayers() {
 }
 exports.clearLayers = clearLayers;
 function addLayer(loader) {
-    let layer = new Layer(layersControlNode.childNodes.length + 1);
+    let layer = new Layer(layersControlNode.childNodes.length);
     lastLoader = lastLoader
         .then(() => new Promise((resolve, reject) => {
         if (layer.condemned) {
@@ -19387,7 +19472,7 @@ function addLayer(loader) {
         resolve(null);
     }))
         .then(loader, error => {
-        console.log(error);
+        console.warn(error);
         return null;
     });
     layer.load(lastLoader);
@@ -19398,7 +19483,12 @@ function addLayer(loader) {
 exports.addLayer = addLayer;
 function toggleLayer(layer) {
     if (layer.condemned) {
-        throw console.error("Somehow toggled a condemned layer.");
+        // This can happen if "Run" is clicked twice in succession and a single
+        // layer is loaded on each click. The reason is that the loader will toggle
+        // the layer when the createMap call returns, and the layer may already be
+        // condemned at that point.
+        console.warn("Toggled a condemned layer.");
+        return;
     }
     if (layer.checkbox.checked) {
         map.overlayMapTypes.setAt(layer.index, layer.imageMapType);
@@ -19408,4 +19498,4 @@ function toggleLayer(layer) {
     }
 }
 
-},{}]},{},[5]);
+},{}]},{},[7]);

@@ -45,7 +45,7 @@ const SPECIAL_BLOCKS: Block[] = [
   {
     message0: "Map.addLayer %1",
     type: "Map.addLayer",
-    args0: [{ type: "input_value", name: "object" }]
+    args0: [{ type: "input_value", name: "value" }]
   },
   {
     message0: "Print %1",

@@ -1,4 +1,4 @@
-export function createMap(expression: object): Promise<object> {
+export function createMap(expression: object): Promise<Response> {
   return fetch("http://localhost:5000/v1/projects/earthengine-legacy/maps", {
     method: "POST",
     body: JSON.stringify({
@@ -13,7 +13,7 @@ export function createMap(expression: object): Promise<object> {
   });
 }
 
-export function computeValue(expression: object): Promise<object> {
+export function computeValue(expression: object): Promise<Response> {
   return fetch("http://localhost:5000/v1/value:compute", {
     method: "POST",
     body: JSON.stringify({ expression: expression }),

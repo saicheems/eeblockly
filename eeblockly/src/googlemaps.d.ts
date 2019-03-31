@@ -2,7 +2,14 @@ declare namespace google.maps {
   enum ControlPosition {
     TOP_RIGHT = 3
   }
-  class ImageMapType implements MapType {}
+  interface MapType {}
+  class ImageMapType implements MapType {
+    constructor(opts: ImageMapOptions);
+  }
+  interface ImageMapOptions {
+    getTileUrl(coord: Point, zoom: number): string;
+    tileSize: Size;
+  }
   interface LatLngLiteral {
     lat: number;
     lng: number;
@@ -17,10 +24,21 @@ declare namespace google.maps {
     disableDefaultUI?: boolean;
     zoom?: number;
   }
-  interface MapType {}
   class MVCArray<T> {
     clear(): void;
     push(elem: T): number;
     setAt(i: number, elem: T): void;
+  }
+  class Point {
+    x: number;
+    y: number;
+  }
+  class Size {
+    constructor(
+      width: number,
+      height: number,
+      widthUnit?: string,
+      hegihtUnit?: string
+    );
   }
 }
