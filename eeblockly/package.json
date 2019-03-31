@@ -9,6 +9,6 @@
     "watchify": "^3.11.1"
   },
   "scripts": {
-    "watch": "watchify -v -p [tsify --noImplicitAny --resolveJsonModule] src/main.ts -o static/js/bundle.js --external blockly --external split.js"
+    "watch": "watchify -v -p [tsify --noImplicitAny --resolveJsonModule --target es6] src/main.ts -o static/js/bundle.js --external blockly --external split.js"
   }
 }

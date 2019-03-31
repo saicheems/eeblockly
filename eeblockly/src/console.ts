@@ -1,18 +1,21 @@
 const consoleEntries = document.getElementById("console-entries");
 
 export class Entry {
-  element: HTMLElement;
+  node: Node;
 
-  constructor(element: HTMLElement) {
-    this.element = element;
+  constructor(text: string) {
+    var p = document.createElement("p");
+    p.appendChild(document.createTextNode(""));
+    this.node = p;
+    this.setText(text);
   }
 
-  setText(text: string) {
-    this.element.firstChild.nodeValue = "> " + text;
+  setText(text: string): void {
+    this.node.firstChild.nodeValue = "> " + text;
   }
 }
 
-export function clearEntries() {
+export function clearEntries(): void {
   // Removes all nodes after the first. I don't know why there are 3
   // children by default, but there are...
   while (consoleEntries.childNodes.length > 3) {
@@ -21,9 +24,7 @@ export function clearEntries() {
 }
 
 export function addEntry(text: string): Entry {
-  var p = document.createElement("p");
-  var textNode = document.createTextNode("> " + text);
-  p.appendChild(textNode);
-  consoleEntries.append(p);
-  return new Entry(p);
+  let entry = new Entry(text);
+  consoleEntries.append(entry.node);
+  return entry;
 }

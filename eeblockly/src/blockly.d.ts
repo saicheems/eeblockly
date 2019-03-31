@@ -5,17 +5,17 @@ declare namespace Blockly {
     opt_options?: object
   ): Blockly.Workspace;
   function svgResize(workspace: Blockly.Workspace): void;
-  class Block {}
+  class Block {
+    type: string;
+  }
   class Flyout {
     CORNER_RADIUS: number;
   }
   class Options {}
-  class Workspace extends Workspace__Class {}
-  class Workspace__Class {
+  class Workspace {
     getTopBlocks(ordered: boolean): Blockly.Block[];
   }
-  class WorkspaceSvg extends WorkspaceSvg__Class {}
-  class WorkspaceSvg__Class extends Blockly.Workspace__Class {
+  class WorkspaceSvg extends Blockly.Workspace {
     getFlyout_(): Blockly.Flyout;
   }
 }

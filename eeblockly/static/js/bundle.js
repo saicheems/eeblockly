@@ -19030,26 +19030,81 @@ module.exports={
 
 },{}],2:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const consoleEntries = document.getElementById("console-entries");
+class Entry {
+    constructor(text) {
+        var p = document.createElement("p");
+        p.appendChild(document.createTextNode(""));
+        this.node = p;
+        this.setText(text);
+    }
+    setText(text) {
+        this.node.firstChild.nodeValue = "> " + text;
+    }
+}
+exports.Entry = Entry;
+function clearEntries() {
+    // Removes all nodes after the first. I don't know why there are 3
+    // children by default, but there are...
+    while (consoleEntries.childNodes.length > 3) {
+        consoleEntries.removeChild(consoleEntries.childNodes[3]);
+    }
+}
+exports.clearEntries = clearEntries;
+function addEntry(text) {
+    let entry = new Entry(text);
+    consoleEntries.append(entry.node);
+    return entry;
+}
+exports.addEntry = addEntry;
+
+},{}],3:[function(require,module,exports){
+"use strict";
 /// <reference path="blockly.d.ts" />
-exports.__esModule = true;
-var eeBlocks = require("./ee_blocks");
-var workspace = init();
+Object.defineProperty(exports, "__esModule", { value: true });
+const console_ = require("./console");
+const eeBlocks = require("./ee_blocks");
+const map = require("./map");
+const workspace = init();
+const runButton = document.getElementById("run-button");
+var computationId;
+runButton.onclick = function (e) {
+    let thisComputationId = Math.random().toString(36);
+    computationId = thisComputationId;
+    console_.clearEntries();
+    map.clearLayers();
+    let topBlocks = getTopBlocks();
+    let layerCount = 0;
+    var chain = Promise.resolve();
+    for (let block of topBlocks) {
+        if (block.type == "Print") {
+            //var expression = build.expression(block.connection.targetBlock);
+            console.log("Print!");
+        }
+        else if (block.type == "Map.addLayer") {
+            layerCount++;
+            map.addLayer(() => new Promise(resolve => setTimeout(() => {
+                console.log("Done!");
+                resolve();
+            }, 500)));
+        }
+    }
+};
 function getTopBlocks() {
     return workspace.getTopBlocks(true);
 }
-exports.getTopBlocks = getTopBlocks;
 function init() {
     Blockly.defineBlocksWithJsonArray(eeBlocks.BLOCKS);
-    var blocklyArea = document.getElementById("blockly-area");
-    var blocklyDiv = document.getElementById("blockly-div");
-    var workspace = Blockly.inject(blocklyDiv, {
+    let blocklyArea = document.getElementById("blockly-area");
+    let blocklyDiv = document.getElementById("blockly-div");
+    let workspace = Blockly.inject(blocklyDiv, {
         toolbox: Blockly.Options.parseToolboxTree(eeBlocks.TOOLBOX_XML)
     });
-    console.log(workspace);
     function onresize() {
-        var element = blocklyArea;
-        var x = 0;
-        var y = 0;
+        let element = blocklyArea;
+        let x = 0;
+        let y = 0;
         do {
             x += element.offsetLeft;
             y += element.offsetTop;
@@ -19069,19 +19124,19 @@ function init() {
     return workspace;
 }
 
-},{"./ee_blocks":3}],3:[function(require,module,exports){
+},{"./console":2,"./ee_blocks":4,"./map":6}],4:[function(require,module,exports){
 "use strict";
-exports.__esModule = true;
-var _ = require("./algorithms.json");
-var ALGORITHMS = _["algorithms"];
-var TYPE_MAP = {
+Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("./algorithms.json");
+const ALGORITHMS = _["algorithms"];
+const TYPE_MAP = {
     "Image<unknown bands>": "Image",
     Long: "Number",
     Number: "Number",
     String: "String",
     Object: null
 };
-var SPECIAL_BLOCKS = [
+const SPECIAL_BLOCKS = [
     {
         message0: "Map.addLayer %1",
         type: "Map.addLayer",
@@ -19093,7 +19148,7 @@ var SPECIAL_BLOCKS = [
         args0: [{ type: "input_value", name: "value" }]
     }
 ];
-var TYPE_BLOCKS = [
+const TYPE_BLOCKS = [
     {
         message0: "%1",
         type: "Number",
@@ -19107,17 +19162,16 @@ var TYPE_BLOCKS = [
         output: "String"
     }
 ];
-var ALGORITHM_GROUP_NAMES = ["Image", "Number", "String"];
-var SPECIAL_GROUPS = generateSpecialGroups();
-var ALGORITHM_GROUPS = generateAlgorithmGroups();
+const ALGORITHM_GROUP_NAMES = ["Image", "Number", "String"];
+const SPECIAL_GROUPS = generateSpecialGroups();
+const ALGORITHM_GROUPS = generateAlgorithmGroups();
 exports.BLOCKS = generateBlocks();
 exports.TOOLBOX_XML = generateToolboxXml();
 function generateBlocks() {
-    var blocks = [];
-    for (var _i = 0, _a = [SPECIAL_GROUPS, ALGORITHM_GROUPS]; _i < _a.length; _i++) {
-        var groups = _a[_i];
-        for (var group in groups) {
-            for (var type in groups[group]) {
+    let blocks = [];
+    for (let groups of [SPECIAL_GROUPS, ALGORITHM_GROUPS]) {
+        for (let group in groups) {
+            for (let type in groups[group]) {
                 blocks.push(groups[group][type]);
             }
         }
@@ -19125,21 +19179,19 @@ function generateBlocks() {
     return blocks;
 }
 function generateToolboxXml() {
-    var xml = "<xml>";
-    for (var _i = 0, _a = [SPECIAL_GROUPS, ALGORITHM_GROUPS]; _i < _a.length; _i++) {
-        var groups = _a[_i];
-        for (var group in groups) {
-            xml += "<category name=\"" + group + "\">";
-            for (var type in groups[group]) {
-                var block = groups[group][type];
-                xml += "<block type=\"" + type + "\">";
-                for (var _b = 0, _c = block.args0; _b < _c.length; _b++) {
-                    var argument = _c[_b];
+    let xml = "<xml>";
+    for (let groups of [SPECIAL_GROUPS, ALGORITHM_GROUPS]) {
+        for (let group in groups) {
+            xml += `<category name="${group}">`;
+            for (let type in groups[group]) {
+                let block = groups[group][type];
+                xml += `<block type="${type}">`;
+                for (let argument of block.args0) {
                     if ("defaultValue" in argument) {
-                        xml += "<value name=\"" + argument.name + "\">";
+                        xml += `<value name="${argument.name}">`;
                         if (argument.check == "Number") {
                             xml += '<shadow type="Number">';
-                            xml += "<field name=\"value\">" + argument.defaultValue + "</field>";
+                            xml += `<field name="value">${argument.defaultValue}</field>`;
                             xml += "</shadow>";
                         }
                         xml += "</value>";
@@ -19155,11 +19207,10 @@ function generateToolboxXml() {
     return xml;
 }
 function generateSpecialGroups() {
-    var groups = {};
-    for (var _i = 0, SPECIAL_BLOCKS_1 = SPECIAL_BLOCKS; _i < SPECIAL_BLOCKS_1.length; _i++) {
-        var block = SPECIAL_BLOCKS_1[_i];
-        var type = block.type;
-        var group = type.split(".")[0];
+    let groups = {};
+    for (let block of SPECIAL_BLOCKS) {
+        let type = block.type;
+        let group = type.split(".")[0];
         if (ALGORITHM_GROUP_NAMES.indexOf(group) == -1) {
             groups[group] = {};
         }
@@ -19168,18 +19219,15 @@ function generateSpecialGroups() {
     return groups;
 }
 function generateAlgorithmGroups() {
-    var groups = {};
-    for (var _i = 0, ALGORITHM_GROUP_NAMES_1 = ALGORITHM_GROUP_NAMES; _i < ALGORITHM_GROUP_NAMES_1.length; _i++) {
-        var group = ALGORITHM_GROUP_NAMES_1[_i];
+    let groups = {};
+    for (let group of ALGORITHM_GROUP_NAMES) {
         groups[group] = {};
     }
-    for (var _a = 0, TYPE_BLOCKS_1 = TYPE_BLOCKS; _a < TYPE_BLOCKS_1.length; _a++) {
-        var block = TYPE_BLOCKS_1[_a];
-        var type = block.type;
+    for (let block of TYPE_BLOCKS) {
+        let type = block.type;
         groups[type][type] = block;
     }
-    for (var _b = 0, ALGORITHMS_1 = ALGORITHMS; _b < ALGORITHMS_1.length; _b++) {
-        var algorithm = ALGORITHMS_1[_b];
+    for (let algorithm of ALGORITHMS) {
         if (algorithm.name == "algorithms/Image.constant") {
             groups["Image"]["Image.constant"] = generateBlock(algorithm);
         }
@@ -19190,16 +19238,16 @@ function generateAlgorithmGroups() {
     return groups;
 }
 function generateBlock(algorithm) {
-    var id = algorithmId(algorithm);
-    var block = {
+    let id = algorithmId(algorithm);
+    let block = {
         args0: [{ type: "input_dummy" }],
-        message0: id + " %1 ",
+        message0: `${id} %1 `,
         type: id
     };
-    for (var i in algorithm.arguments) {
-        var argument = algorithm.arguments[i];
-        var argumentName = argument.argumentName;
-        var a = {
+    for (let i in algorithm.arguments) {
+        let argument = algorithm.arguments[i];
+        let argumentName = argument.argumentName;
+        let a = {
             check: TYPE_MAP[argument.type],
             name: argumentName,
             type: "input_value"
@@ -19208,7 +19256,7 @@ function generateBlock(algorithm) {
             a.defaultValue = argument.defaultValue;
         }
         block.args0.push(a);
-        block.message0 += argumentName + " %" + (+i + 2) + " ";
+        block.message0 += `${argumentName} %${+i + 2} `;
     }
     block.message0 = block.message0.trim();
     block.output = TYPE_MAP[algorithm.returnType];
@@ -19219,9 +19267,9 @@ function algorithmId(algorithm) {
     return algorithm.name.split("/")[1];
 }
 
-},{"./algorithms.json":1}],4:[function(require,module,exports){
+},{"./algorithms.json":1}],5:[function(require,module,exports){
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 require("./editor.ts");
 require("./map.ts");
 Split(["#left-pane", "#right-pane"], {
@@ -19237,27 +19285,127 @@ Split(["#editor", "#console"], {
     sizes: [60, 40]
 });
 
-},{"./editor.ts":2,"./map.ts":5}],5:[function(require,module,exports){
+},{"./editor.ts":3,"./map.ts":6}],6:[function(require,module,exports){
+"use strict";
+/// <reference path="googlemaps.d.ts" />
+Object.defineProperty(exports, "__esModule", { value: true });
 var map;
+var layersControlNode;
 window.initMap = function () {
     window.initMap = null;
     map = init();
+    layersControlNode = initLayerControl();
 };
+var layers = [];
+var lastLoader = Promise.resolve(1);
+class Layer {
+    constructor(index) {
+        var template = document.createElement("template");
+        template.innerHTML = `<li class="mdc-list-item" role="checkbox">
+  <span class="mdc-list-item__graphic">
+    <div class="mdc-checkbox">
+      <input type="checkbox"
+             class="mdc-checkbox__native-control"
+             id="layer-${index}-checkbox"/>
+      <div class="mdc-checkbox__background">
+        <svg class="mdc-checkbox__checkmark"
+             viewBox="0 0 24 24">
+          <path class="mdc-checkbox__checkmark-path"
+                fill="none"
+                d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+        </svg>
+        <div class="mdc-checkbox__mixedmark"></div>
+      </div>
+    </div>
+  </span>
+  <label class="mdc-list-item__text"
+         for="layer-list-checkbox-item-${index}">Layer ${index}</label>
+</li>`;
+        this.checkbox = template.content.querySelector(`#layer-${index}-checkbox`);
+        this.checkbox.onchange = () => toggleLayer(this);
+        this.condemned = false;
+        this.enable(false);
+        this.node = template.content.firstChild;
+    }
+    check(checked) {
+        this.checkbox.checked = checked;
+    }
+    condemn() {
+        this.condemned = true;
+    }
+    enable(enabled) {
+        this.checkbox.disabled = !enabled;
+    }
+    load(loader) {
+        loader.then(imageMapType => {
+            // TODO: If imageMapType is null, set this layer to an error state.
+            this.imageMapType = imageMapType;
+            this.enable(true);
+            this.check(true);
+        });
+    }
+}
+exports.Layer = Layer;
 function init() {
-    var map = new google.maps.Map(document.getElementById("map"), {
+    let map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 0, lng: 0 },
         zoom: 2,
         disableDefaultUI: true
     });
-    var ul = document.createElement("ul");
+    return map;
+}
+function initLayerControl() {
+    let ul = document.createElement("ul");
     ul.setAttribute("class", "mdc-list mdc-list--dense");
     ul.setAttribute("role", "group");
     ul.style.backgroundColor = "#fff";
     ul.style.margin = "8px";
     ul.style.borderRadius = "2px";
-    //controlDiv.appendChild(ul);
-    //map.controls[google.maps.ControlPosition.TOP_RIGHT].push(layerControlDiv);
-    return map;
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(ul);
+    return ul;
+}
+function clearLayers() {
+    lastLoader.catch(reason => console.warn(reason));
+    lastLoader = Promise.resolve(1);
+    while (layersControlNode.firstChild) {
+        layersControlNode.removeChild(layersControlNode.firstChild);
+    }
+    for (let layer of layers) {
+        layer.condemn();
+    }
+    layers = [];
+    map.overlayMapTypes.clear();
+}
+exports.clearLayers = clearLayers;
+function addLayer(loader) {
+    let layer = new Layer(layersControlNode.childNodes.length + 1);
+    lastLoader = lastLoader
+        .then(() => new Promise((resolve, reject) => {
+        if (layer.condemned) {
+            reject(new Error("Layer was condemned, aborting!!!"));
+        }
+        resolve(null);
+    }))
+        .then(loader, error => {
+        console.log(error);
+        return null;
+    });
+    layer.load(lastLoader);
+    layersControlNode.appendChild(layer.node);
+    layers.push(layer);
+    return layer;
+}
+exports.addLayer = addLayer;
+function toggleLayer(layer) {
+    if (layer.condemned) {
+        throw console.error("Somehow toggled a condemned layer.");
+    }
+    if (layer.checkbox.checked) {
+        map.overlayMapTypes.setAt(layer.index, layer.imageMapType);
+    }
+    else {
+        map.overlayMapTypes.setAt(layer.index, null);
+    }
 }
 
-},{}]},{},[4]);
+},{}]},{},[5]);
