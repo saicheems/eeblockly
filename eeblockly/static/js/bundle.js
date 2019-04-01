@@ -19352,7 +19352,9 @@ function algorithmId(algorithm) {
 
 },{"./algorithms.json":1}],7:[function(require,module,exports){
 "use strict";
+/// <reference path="split.js.d.ts" />
 Object.defineProperty(exports, "__esModule", { value: true });
+// Import the editor and map to initialize them.
 require("./editor.ts");
 require("./map.ts");
 Split(["#left-pane", "#right-pane"], {

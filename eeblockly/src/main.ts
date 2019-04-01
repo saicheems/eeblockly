@@ -1,5 +1,6 @@
-declare var Split: any;
-import console = require("./console");
+/// <reference path="split.js.d.ts" />
+
+// Import the editor and map to initialize them.
 import "./editor.ts";
 import "./map.ts";
 
